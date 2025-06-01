@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Identity Check (Improved UX)</title>
+<style>
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f5f7fa;
+    padding: 40px 20px;
+    max-width: 600px;
+    margin: 40px auto;
+    color: #333;
+  }
+  h2 {
+    text-align: center;
+    margin-bottom: 30px;
+    font-weight: 700;
+    color: #2c3e50;
+  }
+  input, button {
+    width: 100%;
+    padding: 14px 16px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    border: 1.8px solid #ccc;
+    font-size: 16px;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  }
+  input:focus {
+    border-color: #0078d7;
+    box-shadow: 0 0 8px rgba(0, 120, 215, 0.3);
+    outline: none;
+  }
+  button {
+    background-color: #0078d7;
+    color: #fff;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0, 120, 215, 0.4);
+    user-select: none;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  }
+  button:hover:not(:disabled) {
+    background-color: #005aab;
+    box-shadow: 0 6px 15px rgba(0, 90, 171, 0.6);
+  }
+  button:active:not(:disabled) {
+    background-color: #004080;
+    box-shadow: 0 2px 6px rgba(0, 64, 128, 0.8);
+  }
+  button:disabled {
+    background-color: #bbb;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+  #result {
+    background: #fff;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 0 12px rgba(0,0,0,0.1);
+    color: #222;
+    font-size: 16px;
+    line-height: 1.5;
+  }
+  #result strong {
+    color: #0078d7;
+  }
+  #connectWalletBtn, #disconnectWalletBtn {
+    margin-bottom: 20px;
+  }
+</style>
+</head>
+<body>
+
+<h2>Check Digital Identity</h2>
+
+<button id="connectWalletBtn">Connect Wallet</button>
+<button id="disconnectWalletBtn" style="display:none;">Disconnect Wallet</button>
+
+<input id="name" type="text" placeholder="Enter name" autocomplete="off" disabled />
+<input id="nationalID" type="text" placeholder="Enter national ID" autocomplete="off" disabled />
+<button id="checkIdentityBtn" disabled>Check Identity</button>
+
+<div id="result"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+<script>
+  const contractAddress = "0x16c6de4D7bB173F549e93ca01f56c18268D1748b"; // Replace with your contract address
+  const contractABI = [
+    {
+      "inputs": [{ "internalType": "address", "name": "user", "type": "address" }],
+      "name": "getCID",
+      "outputs": [{ "internalType": "string", "name": "", "type": "string" }],
+      "stateMutability": "pure",
+      "type": "function"
+    }
+  ];
+
+  let provider, signer;
+
+  const connectWalletBtn = document.getElementById('connectWalletBtn');
+  const disconnectWalletBtn = document.getElementById('disconnectWalletBtn');
+  const checkIdentityBtn = document.getElementById('checkIdentityBtn');
+  const nameInput = document.getElementById('name');
+  const nationalIDInput = document.getElementById('nationalID');
+  const resultEl = document.getElementById('result');
+
+  async function checkIfConnected() {
+    if (typeof window.ethereum === "undefined") {
+      connectWalletBtn.textContent = "MetaMask Not Installed";
+      connectWalletBtn.disabled = true;
+      resultEl.textContent = "Please install MetaMask to use this app.";
+      return false;
+    }
+    provider = new ethers.providers.Web3Provider(window.ethereum);
+    const accounts = await provider.listAccounts();
+    if (accounts.length > 0) {
+      signer = provider.getSigner();
+      onWalletConnected();
+      return true;
+    }
+    return false;
+  }
+
+  function onWalletConnected() {
+    connectWalletBtn.textContent = "Wallet Connected";
+    connectWalletBtn.disabled = true;
+    connectWalletBtn.style.display = "none";
+    disconnectWalletBtn.style.display = "inline-block";
+
+    nameInput.disabled = false;
+    nationalIDInput.disabled = false;
+    checkIdentityBtn.disabled = false;
+    resultEl.textContent = "";
+  }
+
+  function disconnectWallet() {
+    signer = null;
+    provider = null;
+
+    connectWalletBtn.textContent = "Connect Wallet";
+    connectWalletBtn.disabled = false;
+    connectWalletBtn.style.display = "inline-block";
+    disconnectWalletBtn.style.display = "none";
+
+    nameInput.disabled = true;
+    nationalIDInput.disabled = true;
+    checkIdentityBtn.disabled = true;
+
+    nameInput.value = "";
+    nationalIDInput.value = "";
+    resultEl.textContent = "Wallet disconnected. Please connect again.";
+  }
+
+  connectWalletBtn.addEventListener('click', async () => {
+    try {
+      provider = new ethers.providers.Web3Provider(window.ethereum);
+      await provider.send("eth_requestAccounts", []);
+      signer = provider.getSigner();
+      onWalletConnected();
+    } catch (err) {
+      console.error(err);
+      resultEl.textContent = "Connection rejected or failed.";
+    }
+  });
+
+  disconnectWalletBtn.addEventListener('click', disconnectWallet);
+
+  checkIdentityBtn.addEventListener('click', verifyUser);
+
+  async function verifyUser() {
+    const name = nameInput.value.trim();
+    const nationalID = nationalIDInput.value.trim();
+    resultEl.textContent = "";
+
+    if (!name || !nationalID) {
+      alert("Please enter both name and national ID.");
+      return;
+    }
+
+    try {
+      const userAddress = await signer.getAddress();
+      const contract = new ethers.Contract(contractAddress, contractABI, signer);
+
+      const cid = await contract.getCID(userAddress);
+      const ipfsURL = `https://gateway.pinata.cloud/ipfs/${cid}`;
+      const response = await fetch(ipfsURL);
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch IPFS data: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+
+      if (!Array.isArray(data)) {
+        resultEl.textContent = "IPFS data format error: expected an array.";
+        return;
+      }
+
+      const matched = data.find(item => item.name === name && item.nationalID === nationalID);
+
+      if (matched) {
+        resultEl.innerHTML = `
+          <p><strong>Name:</strong> ${matched.name}</p>
+          <p><strong>National ID:</strong> ${matched.nationalID}</p>
+          <p><strong>Date of Birth:</strong> ${matched.dob}</p>
+          <p><strong>Gender:</strong> ${matched.gender}</p>
+          <p><strong>Address:</strong> ${matched.address}</p>
+          <p><strong>Email:</strong> <a href="mailto:${matched.email}">${matched.email}</a></p>
+          <p><strong>Phone:</strong> <a href="tel:${matched.phone}">${matched.phone}</a></p>
+        `;
+      } else {
+        resultEl.textContent = "No matching record found.";
+      }
+
+    } catch (error) {
+      console.error(error);
+      resultEl.textContent = "Error fetching identity: " + error.message;
+    }
+  }
+
+  window.addEventListener('load', async () => {
+    await checkIfConnected();
+  });
+
+  if (window.ethereum) {
+    window.ethereum.on('accountsChanged', async (accounts) => {
+      if (accounts.length === 0) {
+        disconnectWallet();
+      } else {
+        signer = provider.getSigner();
+        onWalletConnected();
+        resultEl.textContent = "";
+      }
+    });
+  }
+</script>
+
+</body>
+</html>
