@@ -4,14 +4,34 @@ This project demonstrates a simple blockchain-based digital identity verificatio
 
 ---
 
+## 📌 Features
+
+- ✅ Self-Sovereign Identity using Ethereum
+- 🔐 Secure document storage via IPFS (Pinata)
+- ⚙️ Smart contract deployment and interaction using MetaMask and Remix IDE
+- 🌐 Frontend with JavaScript and Ethers.js
+- 🔗 Fully decentralized design: Ethereum + IPFS
+
+---
+
 ## ⚙️ Prerequisites
 
 Before running the project, ensure the following are installed:
 
 - [MetaMask](https://metamask.io/) browser extension
+  
+- [Ganache](https://trufflesuite.com/ganache/) for local blockchain  
+   ![Ganache](./images/ganache_image.jpg)
+
+  
 - [Remix IDE](https://remix.ethereum.org/)
+    ![Remix IDE](./images/metamask_image.jpg)
+  
 - [Pinata IPFS Account](https://www.pinata.cloud/)
+    ![Pinata](./images/pinata_image.jpg)
+  
 - [VS Code](https://code.visualstudio.com/) with Live Server extension (or any static file server)
+ 
 
 ---
 
@@ -58,9 +78,10 @@ Before running the project, ensure the following are installed:
 ### 6. Update Frontend
 
 - Open `index2.html` in a text/code editor.
+
 - Locate the following line:
 
   ```javascript
   const contractAddress = "your_contract_address_here";
 
-
+![](./images/BC_project_frontend.jpg)
