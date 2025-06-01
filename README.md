@@ -43,9 +43,6 @@ Before running the project, ensure the following are installed:
 - Upload the file: `users_large.json`
 - Copy the **CID (Content Identifier)** shown after upload
 
-  📌 Example Pinata UI:
-
-![Upload to IPFS via Pinata](./images/pinata.jpg)
 
 ### 2. Update Smart Contract
 
