@@ -81,4 +81,4 @@ Before running the project, ensure the following are installed:
   ```javascript
   const contractAddress = "your_contract_address_here";
 
-![](./images/BC_project_frontend.jpg)
+![](./BC_project_frontend.jpg)
