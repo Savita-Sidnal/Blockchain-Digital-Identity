@@ -21,14 +21,14 @@ Before running the project, ensure the following are installed:
 - [MetaMask](https://metamask.io/) browser extension
   
 - [Ganache](https://trufflesuite.com/ganache/) for local blockchain  
-   ![Ganache](./images/ganache_image.jpg)
+   ![Ganache](./ganache_image.jpg)
 
   
 - [Remix IDE](https://remix.ethereum.org/)
-    ![Remix IDE](./images/metamask_image.jpg)
+    ![Remix IDE](./metamask_image.jpg)
   
 - [Pinata IPFS Account](https://www.pinata.cloud/)
-    ![Pinata](./images/pinata_image.jpg)
+    ![Pinata](./pinata_image.jpg)
   
 - [VS Code](https://code.visualstudio.com/) with Live Server extension (or any static file server)
  
